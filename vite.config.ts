@@ -7,6 +7,15 @@ import vue from "@vitejs/plugin-vue";
 export default defineConfig({
   plugins: [vue()],
   resolve: {
+    extensions: [
+      '.wasm',
+      '.mjs',
+      '.js',
+      '.jsx',
+      '.vue', // 👈 note this entry
+      '.json',
+      '.ce.vue'
+    ],
     alias: {
       "@": fileURLToPath(new URL("./src", import.meta.url)),
     },
