@@ -18,4 +18,5 @@ export interface StateType {
   productList: Product[];
   selectedList: Product[];
   userInfo: UserInfo;
+  loading: boolean;
 }

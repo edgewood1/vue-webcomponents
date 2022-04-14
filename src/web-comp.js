@@ -9,6 +9,7 @@ import { styleMap } from "lit-html/directives/style-map.js";
       this.userInfo = {};
       this.selectedList = [];
       this.page = 1;
+      this.loading = false;
       this.handleNameEmail = this.handleNameEmail.bind(this);
       this.handleClick = this.handleClick.bind(this);
       this.handleCheck = this.handleCheck.bind(this);
@@ -19,14 +20,17 @@ import { styleMap } from "lit-html/directives/style-map.js";
       this.renderBase();
     }
 
-    getModel = async () => { 
+    getModel = async () => {
+      this.loading = true;
       const url = "https://fakestoreapi.com/products?limit=3"; 
       try {
         const response = await fetch(url);
         this.products = await response.json();
-        this.renderPosts();
+        this.loading = false;
+        this.renderBase();
       } catch (error) {
         console.log(error);
+        this.loading = false;
         throw error;
       }
     };
@@ -59,67 +63,94 @@ import { styleMap } from "lit-html/directives/style-map.js";
 
     handleClick() {
       this.page = this.page + 1;
-      if (this.page == 2) this.renderPage();
-      if (this.page == 3) this.renderEnd();
+      this.renderBase();
+    }
+
+    getPage() {
+      switch (this.page) {
+        case 1:
+          return this.renderPosts();
+        case 2:
+          return this.renderNameEmail();
+        case 3:
+          return this.renderFinal();
+      }
     }
     // common elements
     renderBase() {
-      const base = html`<div
-        style=${styleMap(this.pageStyles)}
-        id="modal"
-      ></div>`;
-      render(base, this.shadowRoot);
-    }
-
-    renderButton() {
-      return html`<br /><button
-          style="width:fit-content"
-          @click=${this.handleClick}
-        >
-          Continue
-        </button>`;
-    }
-
-    renderTitle() {
-      return html`<p>vanilla WC + lit-html</p>`;
+      const page = html`<div style=${styleMap(this.pageStyles)} id="modal">
+        <p><strong>Vanilla WC + Lit-html</strong></p>
+        ${this.loading ? this.spinner() : this.getPage()}
+        <br />
+        ${!this.loading && this.page < 3
+          ? html`<button style="width:fit-content" @click=${this.handleClick}>
+              Continue
+            </button>`
+          : ""}
+      </div>`;
+      render(page, this.shadowRoot);
     }
 
     // page elements
     renderPosts() {
-      const page = html`${this.renderTitle()}
+      return html`
         <div>
           ${this.products.map(
             (e) => html`<div>
-              <input @change="${this.handleCheck}" id=${e.id} type="checkbox" />
+              <input
+                @change="${this.handleCheck}"
+                id=${e.id}
+                type="checkbox"
+                style="margin-right:10px"
+              />
               <span> ${e.title} </span>
             </div>`
           )}
         </div>
-        ${this.renderButton()}`;
-      render(page, this.shadowRoot.querySelector("#modal"));
+      `;
     }
 
-    renderPage() {
-      const page = html`${this.renderTitle()}
+    renderNameEmail() {
+      return html`
         <label for="name">name</label>
-        <input @input="${this.handleNameEmail}" id="name"/>
+        <input @input="${this.handleNameEmail}" id="name" />
         <label for="email">email</label>
         <input @input="${this.handleNameEmail}" id="email" />
-        ${this.renderButton()}`;
-      render(page, this.shadowRoot.querySelector("#modal"));
+      `;
     }
 
-    renderEnd() {
-      const page = html`${this.renderTitle()}
-        ${this.selectedList.map(
+    spinner() {
+      return html`<div class="loader"></div>
+        <style>
+          .loader {
+            border: 16px solid #f3f3f3; /* Light grey */
+            border-top: 16px solid #3d8895; /* Blue */
+            border-radius: 50%;
+            width: 50px;
+            height: 50px;
+            animation: spin 2s linear infinite;
+          }
+
+          @keyframes spin {
+            0% {
+              transform: rotate(0deg);
+            }
+            100% { 
+              transform: rotate(360deg);
+            }
+          }
+        </style>`;
+    }
+
+    renderFinal() {
+      return html`${this.selectedList.map(
           (item) =>
             html`<div>
               <div>Title: ${item.title}</div>
             </div>`
         )}
-        <div>Name: ${this.userInfo.name}</div>
-        <div>Email: ${this.userInfo.email}</div>`;
-      render(page, this.shadowRoot.querySelector("#modal"));
+        <div><strong>Name: </strong> ${this.userInfo.name}</div>
+        <div><strong>Email: </strong> ${this.userInfo.email}</div>`;
     }
 
     pageStyles = {
@@ -127,10 +158,11 @@ import { styleMap } from "lit-html/directives/style-map.js";
       padding: "20px",
       border: "1px solid black",
       "border-radius": "2%",
-      width: "30vw",
+      width: "40vw",
       display: "flex",
       "flex-direction": "column",
       "align-content": "center",
+      background: "turquoise",
     };
   }
 
