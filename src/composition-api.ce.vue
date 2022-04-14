@@ -56,10 +56,6 @@ function handleCheck(e): void {
   }
 }
 
-function handleInput(e) {
-  console.log(e);
-}
-
 function handleNameEmail(e) {
   const source = e.composedPath()[0];
   if (source.id === "name") {
